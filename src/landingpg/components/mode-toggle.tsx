@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/landingpg/components/theme-provider";
 import { Moon, Sun } from "lucide-react";
 
 export function ModeToggle() {
