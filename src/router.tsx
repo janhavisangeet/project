@@ -7,11 +7,16 @@ import HomePage from "./pages/HomePage";
 import PdfsPage from "./pages/PdfsPage";
 import AuthLayout from "./layouts/AuthLayout";
 import CreatePdf from "./pages/CreatePdf";
+import AllPdfsPage from "./pages/AllPdfsPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <LandingPage />,
+  },
+  {
+    path: "/allPdfs",
+    element: <AllPdfsPage />,
   },
   {
     path: "/auth",

@@ -29,6 +29,10 @@ export const getPdfs = async (params: GetPdfsParams = {}) => {
     return api.get('/api/pdfs', { params });
 };
 
+export const getAllPdfs = async (params: GetPdfsParams = {}) => {
+    return api.get('/api/pdfs/allPdf', { params });
+};
+
 export const createPdf = async (data: FormData) =>
     api.post('/api/pdfs', data, {
         headers: {
