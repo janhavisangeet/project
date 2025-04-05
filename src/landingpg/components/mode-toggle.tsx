@@ -8,7 +8,7 @@ import {
 import { useTheme } from "@/landingpg/components/theme-provider";
 import { Moon, Sun } from "lucide-react";
 
-export function ModeToggle() {
+export const ModeToggle = () => {
   const { setTheme } = useTheme();
 
   return (
@@ -33,4 +33,4 @@ export function ModeToggle() {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};
