@@ -1,4 +1,4 @@
-export interface Author {
+export interface User {
     _id: string;
     name: string;
 }
@@ -7,7 +7,7 @@ export interface Pdf {
     _id: string;
       year: Number;
       month: string;
-      author: Author;
+      user: User;
       file: string;
       createdAt: Date;
       updatedAt: Date;
