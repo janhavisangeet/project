@@ -1,11 +1,11 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+// import {
+//   Breadcrumb,
+//   BreadcrumbItem,
+//   BreadcrumbLink,
+//   BreadcrumbList,
+//   BreadcrumbPage,
+//   BreadcrumbSeparator,
+// } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,8 +33,8 @@ import {
 import { getAllPdfs } from "@/http/api";
 import { Pdf } from "@/types";
 import { useQuery } from "@tanstack/react-query";
-import { CirclePlus, MoreHorizontal } from "lucide-react";
-import { Link } from "react-router-dom";
+import { MoreHorizontal } from "lucide-react";
+//import { Link } from "react-router-dom";
 import { useState } from "react";
 import {
   Select,
@@ -84,7 +84,7 @@ const AllPdfsPage = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <div className="flex items-center justify-between">
         {/* <Breadcrumb>
           <BreadcrumbList>
@@ -97,12 +97,12 @@ const AllPdfsPage = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb> */}
-        <Link to="/dashboard/pdfs/create">
+        {/* <Link to="/dashboard/pdfs/create">
           <Button>
             <CirclePlus size={20} />
             <span className="ml-2">Add PDF</span>
           </Button>
-        </Link>
+        </Link> */}
       </div>
 
       {/* Filters */}
@@ -138,7 +138,7 @@ const AllPdfsPage = () => {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>PDFs</CardTitle>
+          <CardTitle>All PDFs</CardTitle>
           <CardDescription>Manage your uploaded PDF files.</CardDescription>
         </CardHeader>
         <CardContent>

@@ -31,7 +31,7 @@ export const Hero = () => {
           <Link
             to="/allPdfs"
             className={`w-[100px] border ${buttonVariants({
-              variant: "secondary",
+              variant: "default",
             })}`}
           >
             Show Pdfs
