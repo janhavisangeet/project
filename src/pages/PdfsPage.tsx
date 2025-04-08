@@ -219,7 +219,10 @@ const PdfsPage = () => {
             <Button
               size="sm"
               variant="outline"
-              disabled={data?.data?.pagination.totalPages == page}
+              disabled={
+                !data?.data?.pagination?.totalPages || // no pages at all
+                data?.data?.pagination.totalPages === page // last page
+              }
               onClick={() => setPage((prev) => prev + 1)}
             >
               Next
