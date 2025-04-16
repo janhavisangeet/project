@@ -39,3 +39,12 @@ export const createPdf = async (data: FormData) =>
             'Content-Type': 'multipart/form-data',
         },
 });
+
+export const deletePdf = async (id: string) => api.delete(`/api/pdfs/${id}`);
+
+export const updatePdf = async (id: string, data: FormData) =>
+    api.patch(`/api/pdfs/${id}`, data, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });

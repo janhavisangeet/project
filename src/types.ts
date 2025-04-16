@@ -3,20 +3,34 @@ export interface User {
     name: string;
 }
 
+// export interface Pdf {
+//     _id: string;
+//       year: Number;
+//       month: string;
+//       user: User;
+//       file: string;
+//       createdAt: Date;
+//       updatedAt: Date;
+// }
+
 export interface Pdf {
     _id: string;
-      year: Number;
-      month: string;
-      user: User;
-      file: string;
-      createdAt: Date;
-      updatedAt: Date;
-}
+    user: User;
+    file: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+  
+// export interface GetPdfsParams {
+//     month?: string;
+//     year?: string | number;
+//     page?: number;
+//     limit?: number;
+// }
 
 export interface GetPdfsParams {
-    month?: string;
-    year?: string | number;
+    date?: string; // ISO date string like "2025-04-14"
     page?: number;
     limit?: number;
-}
-
+  }
+  
