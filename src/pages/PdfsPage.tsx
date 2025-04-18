@@ -36,53 +36,83 @@ import { useQuery } from "@tanstack/react-query";
 import { CirclePlus, MoreHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+//import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarIcon } from "lucide-react";
 
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+// const months = [
+//   "January",
+//   "February",
+//   "March",
+//   "April",
+//   "May",
+//   "June",
+//   "July",
+//   "August",
+//   "September",
+//   "October",
+//   "November",
+//   "December",
+// ];
+
+// const PdfsPage = () => {
+//   const [month, setMonth] = useState("");
+//   const [year, setYear] = useState("");
+//   const [page, setPage] = useState(1);
+//   const limit = 10;
+
+//   const { data, isLoading, isError } = useQuery({
+//     queryKey: ["pdfs", { month, year, page }],
+//     queryFn: () => getPdfs({ month, year, page, limit }),
+//     staleTime: 10000,
+//   });
+
+//   const handleMonthChange = (value: string) => {
+//     let monthValue = value == "all" ? "" : value;
+//     setMonth(monthValue);
+//     setPage(1);
+//   };
+
+//   const handleYearChange = (value: string) => {
+//     setYear(value);
+//     setPage(1);
+//   };
 
 const PdfsPage = () => {
-  const [month, setMonth] = useState("");
-  const [year, setYear] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [page, setPage] = useState(1);
   const limit = 10;
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["pdfs", { month, year, page }],
-    queryFn: () => getPdfs({ month, year, page, limit }),
+    queryKey: ["pdfs", { selectedDate: selectedDate?.toISOString(), page }],
+    queryFn: () => getPdfs({ date: selectedDate?.toISOString(), page, limit }),
     staleTime: 10000,
   });
 
-  const handleMonthChange = (value: string) => {
-    let monthValue = value == "all" ? "" : value;
-    setMonth(monthValue);
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString();
+  };
+
+  const handleReset = () => {
+    setSelectedDate(undefined);
     setPage(1);
   };
 
-  const handleYearChange = (value: string) => {
-    setYear(value);
-    setPage(1);
-  };
-
+  //const totalPages = data?.data?.pagination?.totalPages || 1;
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -106,7 +136,7 @@ const PdfsPage = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mt-6 items-end">
+      {/* <div className="flex gap-4 mt-6 items-end">
         <div className="flex flex-col gap-1">
           <label className="text-sm text-muted-foreground">Month</label>
           <Select value={month} onValueChange={handleMonthChange}>
@@ -134,6 +164,42 @@ const PdfsPage = () => {
             className="w-[120px]"
           />
         </div>
+      </div> */}
+
+      <div className="flex gap-4 mt-6 items-end">
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-muted-foreground">Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[200px] justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? (
+                  format(selectedDate, "PPP")
+                ) : (
+                  <span>Pick a date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date: Date | undefined) => {
+                  setSelectedDate(date);
+                  setPage(1);
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <Button variant="ghost" onClick={handleReset}>
+          Reset
+        </Button>
       </div>
 
       <Card className="mt-6">
@@ -150,8 +216,8 @@ const PdfsPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Month</TableHead>
-                  <TableHead>Year</TableHead>
+                  {/* <TableHead>Month</TableHead>
+                  <TableHead>Year</TableHead> */}
                   <TableHead>Uploaded At</TableHead>
                   <TableHead>File</TableHead>
                   <TableHead>
@@ -159,13 +225,52 @@ const PdfsPage = () => {
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+
+              {/* <TableBody>
                 {data?.data?.data.map((pdf: Pdf) => (
                   <TableRow key={pdf._id}>
                     <TableCell>{pdf.month}</TableCell>
                     <TableCell>{Number(pdf.year)}</TableCell>
                     <TableCell>
                       {new Date(pdf.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <a
+                        href={pdf.file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline text-sm"
+                      >
+                        View PDF
+                      </a>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            aria-haspopup="true"
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>Edit</DropdownMenuItem>
+                          <DropdownMenuItem>Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody> */}
+
+              <TableBody>
+                {data?.data?.data.map((pdf: Pdf) => (
+                  <TableRow key={pdf._id}>
+                    <TableCell>
+                      {formatDate(pdf.createdAt.toString())}
                     </TableCell>
                     <TableCell>
                       <a
