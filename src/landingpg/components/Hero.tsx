@@ -23,8 +23,10 @@ export const Hero = () => {
         </main>
 
         <p className="text-xl text-muted-foreground md:w-10/12 mx-auto lg:mx-0">
-          Build your React landing page effortlessly with the required sections
-          to your project.
+          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Molestias
+          asperiores, repellat beatae sed natus reprehenderit assumenda harum
+          qui. Excepturi, dolor! Similique dolore distinctio excepturi
+          voluptates voluptatibus, ullam recusandae omnis a!
         </p>
 
         <div className="space-y-4 md:space-y-0 md:space-x-4">
