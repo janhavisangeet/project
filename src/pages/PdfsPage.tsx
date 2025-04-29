@@ -30,76 +30,66 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getPdfs } from "@/http/api";
-import { Pdf } from "@/types";
-import { useQuery } from "@tanstack/react-query";
-import { CirclePlus, MoreHorizontal } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useState } from "react";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
-//import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 
-// const months = [
-//   "January",
-//   "February",
-//   "March",
-//   "April",
-//   "May",
-//   "June",
-//   "July",
-//   "August",
-//   "September",
-//   "October",
-//   "November",
-//   "December",
-// ];
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getPdfs, createRequest } from "@/http/api";
+import { Pdf } from "@/types";
 
-// const PdfsPage = () => {
-//   const [month, setMonth] = useState("");
-//   const [year, setYear] = useState("");
-//   const [page, setPage] = useState(1);
-//   const limit = 10;
-
-//   const { data, isLoading, isError } = useQuery({
-//     queryKey: ["pdfs", { month, year, page }],
-//     queryFn: () => getPdfs({ month, year, page, limit }),
-//     staleTime: 10000,
-//   });
-
-//   const handleMonthChange = (value: string) => {
-//     let monthValue = value == "all" ? "" : value;
-//     setMonth(monthValue);
-//     setPage(1);
-//   };
-
-//   const handleYearChange = (value: string) => {
-//     setYear(value);
-//     setPage(1);
-//   };
+import { Link } from "react-router-dom";
+import { useState } from "react";
+import { format } from "date-fns";
+import {
+  Calendar as CalendarIcon,
+  CirclePlus,
+  MoreHorizontal,
+} from "lucide-react";
+import { toast } from "sonner";
 
 const PdfsPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [page, setPage] = useState(1);
   const limit = 10;
 
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedPdfId, setSelectedPdfId] = useState<string | null>(null);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["pdfs", { selectedDate: selectedDate?.toISOString(), page }],
     queryFn: () => getPdfs({ date: selectedDate?.toISOString(), page, limit }),
     staleTime: 10000,
+  });
+
+  const { mutate: requestDelete, isPending: isDeleting } = useMutation({
+    mutationFn: (pdfId: string) => createRequest(pdfId),
+    onSuccess: () => {
+      toast.success("Request created successfully!");
+      setOpenDialog(false);
+    },
+    onError: (error: unknown) => {
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as {
+          response?: { data?: { message?: string } };
+        };
+        toast.error(
+          axiosError.response?.data?.message || "Something went wrong."
+        );
+      } else {
+        toast.error("Something went wrong.");
+      }
+    },
   });
 
   const formatDate = (dateStr: string) => {
@@ -112,7 +102,6 @@ const PdfsPage = () => {
     setPage(1);
   };
 
-  //const totalPages = data?.data?.pagination?.totalPages || 1;
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -134,37 +123,6 @@ const PdfsPage = () => {
           </Button>
         </Link>
       </div>
-
-      {/* Filters */}
-      {/* <div className="flex gap-4 mt-6 items-end">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-muted-foreground">Month</label>
-          <Select value={month} onValueChange={handleMonthChange}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Select month" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              {months.map((m) => (
-                <SelectItem key={m} value={m}>
-                  {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-muted-foreground">Year</label>
-          <Input
-            type="number"
-            value={year}
-            onChange={(e) => handleYearChange(e.target.value)}
-            placeholder="e.g. 2024"
-            className="w-[120px]"
-          />
-        </div>
-      </div> */}
 
       <div className="flex gap-4 mt-6 items-end">
         <div className="flex flex-col gap-1">
@@ -216,8 +174,6 @@ const PdfsPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {/* <TableHead>Month</TableHead>
-                  <TableHead>Year</TableHead> */}
                   <TableHead>Uploaded At</TableHead>
                   <TableHead>File</TableHead>
                   <TableHead>
@@ -225,46 +181,6 @@ const PdfsPage = () => {
                   </TableHead>
                 </TableRow>
               </TableHeader>
-
-              {/* <TableBody>
-                {data?.data?.data.map((pdf: Pdf) => (
-                  <TableRow key={pdf._id}>
-                    <TableCell>{pdf.month}</TableCell>
-                    <TableCell>{Number(pdf.year)}</TableCell>
-                    <TableCell>
-                      {new Date(pdf.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <a
-                        href={pdf.file}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline text-sm"
-                      >
-                        View PDF
-                      </a>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem>Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody> */}
 
               <TableBody>
                 {data?.data?.data.map((pdf: Pdf) => (
@@ -296,7 +212,14 @@ const PdfsPage = () => {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem>Delete</DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedPdfId(pdf._id);
+                              setOpenDialog(true);
+                            }}
+                          >
+                            Delete
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -325,8 +248,8 @@ const PdfsPage = () => {
               size="sm"
               variant="outline"
               disabled={
-                !data?.data?.pagination?.totalPages || // no pages at all
-                data?.data?.pagination.totalPages === page // last page
+                !data?.data?.pagination?.totalPages ||
+                data?.data?.pagination.totalPages === page
               }
               onClick={() => setPage((prev) => prev + 1)}
             >
@@ -335,6 +258,36 @@ const PdfsPage = () => {
           </div>
         </CardFooter>
       </Card>
+
+      {/* Confirm Delete Dialog */}
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <div>Are you sure you want to request deletion of this PDF?</div>
+          <DialogFooter className="mt-4 flex justify-end gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => setOpenDialog(false)}
+              disabled={isDeleting}
+            >
+              No
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (selectedPdfId) {
+                  requestDelete(selectedPdfId);
+                }
+              }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Processing..." : "Yes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
