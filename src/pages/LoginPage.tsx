@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/http/api";
 import useTokenStore from "@/store";
+import { DecodedToken } from "@/types";
 import { useMutation } from "@tanstack/react-query";
+import { jwtDecode } from "jwt-decode";
 import { LoaderCircle } from "lucide-react";
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -28,8 +30,22 @@ const LoginPage = () => {
     mutationFn: login,
     onSuccess: (response) => {
       setToken(response.data.accessToken);
+      let role;
+      try {
+        const decoded = jwtDecode<DecodedToken>(response.data.accessToken);
+        role = decoded?.role || null;
+      } catch (error) {
+        console.error("Invalid token:", error);
+        return null;
+      }
+
       toast.success("Login successful.");
-      navigate("/dashboard/home");
+
+      if (role === "ADMIN") {
+        navigate("/adminDashboard/home");
+      } else {
+        navigate("/dashboard/home");
+      }
     },
   });
 

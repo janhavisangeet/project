@@ -8,6 +8,8 @@ import PdfsPage from "./pages/PdfsPage";
 import AuthLayout from "./layouts/AuthLayout";
 import CreatePdf from "./pages/CreatePdf";
 import AllPdfsPage from "./pages/AllPdfsPage";
+import RequestsPage from "./pages/RequestPage";
+import AdminDashboardLayout from "./layouts/AdminDashboardLayout";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +49,28 @@ const router = createBrowserRouter([
       {
         path: "pdfs/create",
         element: <CreatePdf />,
+      },
+    ],
+  },
+  {
+    path: "/adminDashboard",
+    element: <AdminDashboardLayout />,
+    children: [
+      {
+        path: "home",
+        element: <HomePage />,
+      },
+      {
+        path: "pdfs",
+        element: <PdfsPage />,
+      },
+      {
+        path: "pdfs/create",
+        element: <CreatePdf />,
+      },
+      {
+        path: "requests", // ✅ New route for admin requests tab
+        element: <RequestsPage />,
       },
     ],
   },

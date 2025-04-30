@@ -47,9 +47,21 @@ export const createPdf = async (data: FormData) =>
 export const createRequest = (pdfId: string) => {
   return api.post("/api/requests", { pdfId });
 };
-export const deleteRequestStatus = (id: string) => {
-  return api.delete(`/api/requests/${id}`);
+export const deleteRequestStatus = ({
+  requestId,
+  status,
+}: {
+  requestId: string;
+  status: "APPROVED" | "CANCELLED";
+}) => {
+  return api.delete(`/api/requests/${requestId}`, {
+    data: { status },
+  });
 };
+
+export const listallRequests = async (page = 1, limit = 10) =>
+  api.get("/api/requests", { params: { page, limit } });
+
 export const updatePdf = async (id: string, data: FormData) =>
   api.patch(`/api/pdfs/${id}`, data, {
     headers: {

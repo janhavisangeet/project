@@ -33,6 +33,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -49,7 +50,7 @@ import { getPdfs, createRequest } from "@/http/api";
 import { Pdf } from "@/types";
 
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import {
   Calendar as CalendarIcon,
@@ -64,6 +65,7 @@ const PdfsPage = () => {
   const limit = 10;
 
   const [openDialog, setOpenDialog] = useState(false);
+
   const [selectedPdfId, setSelectedPdfId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
@@ -75,6 +77,9 @@ const PdfsPage = () => {
   const { mutate: requestDelete, isPending: isDeleting } = useMutation({
     mutationFn: (pdfId: string) => createRequest(pdfId),
     onSuccess: () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
       toast.success("Request created successfully!");
       setOpenDialog(false);
     },
@@ -91,6 +96,10 @@ const PdfsPage = () => {
       }
     },
   });
+
+  useEffect(() => {
+    console.log("data", openDialog);
+  }, [openDialog]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -123,6 +132,8 @@ const PdfsPage = () => {
           </Button>
         </Link>
       </div>
+
+      {}
 
       <div className="flex gap-4 mt-6 items-end">
         <div className="flex flex-col gap-1">
@@ -214,6 +225,11 @@ const PdfsPage = () => {
                           <DropdownMenuItem>Edit</DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
+                              if (
+                                document.activeElement instanceof HTMLElement
+                              ) {
+                                document.activeElement.blur();
+                              }
                               setSelectedPdfId(pdf._id);
                               setOpenDialog(true);
                             }}
@@ -260,7 +276,7 @@ const PdfsPage = () => {
       </Card>
 
       {/* Confirm Delete Dialog */}
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+      {/* <Dialog open={openDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
@@ -269,7 +285,13 @@ const PdfsPage = () => {
           <DialogFooter className="mt-4 flex justify-end gap-4">
             <Button
               variant="ghost"
-              onClick={() => setOpenDialog(false)}
+              onClick={() => {
+                if (document.activeElement instanceof HTMLElement) {
+                  document.activeElement.blur();
+                }
+                setOpenDialog(false);
+                setSelectedPdfId(null);
+              }}
               disabled={isDeleting}
             >
               No
@@ -284,6 +306,55 @@ const PdfsPage = () => {
               disabled={isDeleting}
             >
               {isDeleting ? "Processing..." : "Yes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog> */}
+      <Dialog
+        open={openDialog}
+        onOpenChange={(open) => {
+          // When dialog closes
+          if (!open) {
+            // Remove scroll lock (this happens automatically by Radix, so this is optional)
+            document.body.style.overflow = "";
+
+            // Reset dialog state
+            setOpenDialog(false);
+            setSelectedPdfId(null);
+          }
+        }}
+      >
+        <DialogContent key={selectedPdfId || "default"}>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to request deletion of this PDF?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex justify-end gap-4">
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (selectedPdfId) {
+                  requestDelete(selectedPdfId);
+                }
+              }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Processing..." : "Yes"}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (document.activeElement instanceof HTMLElement) {
+                  document.activeElement.blur(); // Remove any focused state
+                }
+                setOpenDialog(false);
+                setSelectedPdfId(null); // Reset selected PDF ID
+              }}
+              disabled={isDeleting}
+            >
+              No
             </Button>
           </DialogFooter>
         </DialogContent>
