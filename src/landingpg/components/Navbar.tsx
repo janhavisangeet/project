@@ -40,7 +40,7 @@ export const Navbar = () => {
           <NavigationMenuItem className="font-bold flex">
             <Link to="/" className="ml-2 font-bold text-xl flex">
               <LogoIcon />
-              Report Pdfs
+              CSPDCL
             </Link>
           </NavigationMenuItem>
 

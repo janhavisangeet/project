@@ -13,7 +13,7 @@ export const Footer = () => {
             className="font-bold text-xl flex"
           >
             <LogoIcon />
-            ShadcnUI/React
+            CSPDCL
           </a>
         </div>
 
@@ -150,7 +150,7 @@ export const Footer = () => {
         </div>
       </section>
 
-      <section className="container pb-14 text-center">
+      {/* <section className="container pb-14 text-center">
         <h3>
           &copy; 2024 Landing page made by{" "}
           <a
@@ -162,7 +162,7 @@ export const Footer = () => {
             Leo Miranda
           </a>
         </h3>
-      </section>
+      </section> */}
     </footer>
   );
 };
