@@ -9,7 +9,8 @@ import AuthLayout from "./layouts/AuthLayout";
 import CreatePdf from "./pages/CreatePdf";
 import AllPdfsPage from "./pages/AllPdfsPage";
 import RequestsPage from "./pages/RequestPage";
-import AdminDashboardLayout from "./layouts/AdminDashboardLayout";
+import EditingPage from "./pages/EditingPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -50,27 +51,17 @@ const router = createBrowserRouter([
         path: "pdfs/create",
         element: <CreatePdf />,
       },
-    ],
-  },
-  {
-    path: "/adminDashboard",
-    element: <AdminDashboardLayout />,
-    children: [
       {
-        path: "home",
-        element: <HomePage />,
-      },
-      {
-        path: "pdfs",
-        element: <PdfsPage />,
-      },
-      {
-        path: "pdfs/create",
-        element: <CreatePdf />,
+        path: "pdfs/edit",
+        element: <EditingPage />,
       },
       {
         path: "requests", // ✅ New route for admin requests tab
-        element: <RequestsPage />,
+        element: (
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <RequestsPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

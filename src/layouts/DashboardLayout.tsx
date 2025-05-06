@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import useUserRole from "@/hooks/useUserRole";
 import useTokenStore from "@/store";
 import {
   // Bell,
@@ -35,6 +36,7 @@ import { toast } from "sonner";
 
 const DashboardLayout = () => {
   const { token, setToken } = useTokenStore((state) => state);
+  const role = useUserRole();
 
   if (token === "") {
     return <Navigate to={"/auth/login"} replace />;
@@ -86,6 +88,19 @@ const DashboardLayout = () => {
                   <Package className="h-4 w-4" />
                   Pdfs{" "}
                 </NavLink>
+                {role === "ADMIN" && (
+                  <NavLink
+                    to="/dashboard/requests"
+                    className={({ isActive }) => {
+                      return `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${
+                        isActive && "bg-muted"
+                      }`;
+                    }}
+                  >
+                    <Package className="h-4 w-4" />
+                    Requests{" "}
+                  </NavLink>
+                )}
               </nav>
             </div>
             {/* <div className="mt-auto p-4">

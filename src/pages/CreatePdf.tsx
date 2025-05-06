@@ -309,7 +309,6 @@ const formSchema = z.object({
 
 const CreatePdf = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -319,11 +318,10 @@ const CreatePdf = () => {
   });
 
   const fileRef = form.register("file");
-
   const mutation = useMutation({
     mutationFn: createPdf,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pdfs"] });
+      // queryClient.invalidateQueries({ queryKey: ["pdfs"] });
       navigate("/dashboard/pdfs");
     },
   });
@@ -356,7 +354,7 @@ const CreatePdf = () => {
               </BreadcrumbList>
             </Breadcrumb>
             <div className="flex items-center gap-4">
-              <Link to="/dashboard/pdfs">
+              <Link to={"/dashboard/pdfs"}>
                 <Button variant="outline">Cancel</Button>
               </Link>
               <Button type="submit" disabled={mutation.isPending}>
