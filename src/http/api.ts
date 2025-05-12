@@ -44,8 +44,8 @@ export const createPdf = async (data: FormData) =>
 
 // export const deletePdf = async (id: string) => api.delete(`/api/pdfs/${id}`);
 
-export const createRequest = (pdfId: string) => {
-  return api.post("/api/requests", { pdfId });
+export const createDeleteRequest = (pdfId: string) => {
+  return api.post("/api/requests", { pdfId, type: "DELETE" });
 };
 export const deleteRequestStatus = ({
   requestId,
@@ -62,9 +62,29 @@ export const deleteRequestStatus = ({
 export const listallRequests = async (page = 1, limit = 10) =>
   api.get("/api/requests", { params: { page, limit } });
 
-export const updatePdf = async (id: string, data: FormData) =>
-  api.patch(`/api/pdfs/${id}`, data, {
+// export const updatePdf = async (id: string, data: FormData) =>
+//   api.patch(`/api/pdfs/${id}`, data, {
+//     headers: {
+//       "Content-Type": "multipart/form-data",
+//     },
+//   });
+
+export const createEditRequest = (pdfId: string, data: FormData) => {
+  data.append("pdfId", pdfId);
+  data.append("type", "EDIT");
+  return api.post(`/api/requests/edit`, data, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
   });
+};
+
+export const editRequestStatus = ({
+  requestId,
+  status,
+}: {
+  requestId: string;
+  status: "APPROVED" | "CANCELLED";
+}) => {
+  return api.put(`/api/requests/edit/${requestId}/status`, { status });
+};

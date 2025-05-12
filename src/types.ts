@@ -9,6 +9,7 @@ export interface Pdf {
   file: string;
   createdAt: Date;
   updatedAt: Date;
+  date: Date;
 }
 
 export interface GetPdfsParams {

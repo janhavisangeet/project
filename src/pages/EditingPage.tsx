@@ -25,18 +25,10 @@
 //   FormMessage,
 // } from "@/components/ui/form";
 // import { Input } from "@/components/ui/input";
-// // import {
-// //   Select,
-// //   SelectContent,
-// //   SelectItem,
-// //   SelectTrigger,
-// //   SelectValue,
-// // } from "@/components/ui/select";
 // import { useForm } from "react-hook-form";
-// import { createPdf } from "@/http/api";
 // import { useMutation, useQueryClient } from "@tanstack/react-query";
 // import { LoaderCircle } from "lucide-react";
-// import { Link, useNavigate } from "react-router-dom";
+// import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 // import { Calendar } from "@/components/ui/calendar";
 // import {
 //   Popover,
@@ -44,9 +36,8 @@
 //   PopoverTrigger,
 // } from "@/components/ui/popover";
 // import { format } from "date-fns";
-// import { cn } from "@/lib/utils"; // if you're using the classNames helper
-
-// //const currentYear = new Date().getFullYear();
+// import { cn } from "@/lib/utils";
+// import { createEditRequest } from "@/http/api";
 
 // const formSchema = z.object({
 //   date: z.date({ required_error: "Date is required" }),
@@ -55,22 +46,28 @@
 //     .refine((file) => file.length === 1, "PDF file is required"),
 // });
 
-// const CreatePdf = () => {
+// const EditingPage = () => {
+//   const { id: pdfId } = useParams();
+//   const location = useLocation();
 //   const navigate = useNavigate();
+//   const queryClient = useQueryClient();
+
+//   const initialDate = location.state?.date
+//     ? new Date(location.state.date)
+//     : new Date();
 
 //   const form = useForm<z.infer<typeof formSchema>>({
 //     resolver: zodResolver(formSchema),
 //     defaultValues: {
-//       date: new Date(),
+//       date: initialDate,
 //     },
 //   });
 
 //   const fileRef = form.register("file");
 
-//   const queryClient = useQueryClient();
-
 //   const mutation = useMutation({
-//     mutationFn: createPdf,
+//     mutationFn: ({ pdfId, formData }: { pdfId: string; formData: FormData }) =>
+//       createEditRequest(pdfId, formData),
 //     onSuccess: () => {
 //       queryClient.invalidateQueries({ queryKey: ["pdfs"] });
 //       navigate("/dashboard/pdfs");
@@ -78,17 +75,12 @@
 //   });
 
 //   const onSubmit = (values: z.infer<typeof formSchema>) => {
+//     if (!pdfId) return;
+
 //     const formData = new FormData();
-//     // formData.append(
-//     //   "month",
-//     //   values.date.toLocaleString("default", { month: "long" })
-//     // );
-//     // formData.append("year", values.date.getFullYear().toString());
-//     formData.append("createdAt", values.date.toISOString());
-
-//     formData.append("file", values.file[0]);
-
-//     mutation.mutate(formData);
+//     formData.append("newDate", values.date.toISOString());
+//     formData.append("newFile", values.file[0]);
+//     mutation.mutate({ pdfId, formData });
 //   };
 
 //   return (
@@ -107,12 +99,13 @@
 //                 </BreadcrumbItem>
 //                 <BreadcrumbSeparator />
 //                 <BreadcrumbItem>
-//                   <BreadcrumbPage>Create</BreadcrumbPage>
+//                   <BreadcrumbPage>Edit</BreadcrumbPage>
 //                 </BreadcrumbItem>
 //               </BreadcrumbList>
 //             </Breadcrumb>
+
 //             <div className="flex items-center gap-4">
-//               <Link to="/dashboard/pdfs">
+//               <Link to={"/dashboard/pdfs"}>
 //                 <Button variant="outline">Cancel</Button>
 //               </Link>
 //               <Button type="submit" disabled={mutation.isPending}>
@@ -126,72 +119,13 @@
 
 //           <Card className="mt-6">
 //             <CardHeader>
-//               <CardTitle>Create a new PDF</CardTitle>
+//               <CardTitle>Edit PDF</CardTitle>
 //               <CardDescription>
-//                 Fill out the form below to upload a PDF.
+//                 Select a new file and date to request changes.
 //               </CardDescription>
 //             </CardHeader>
 //             <CardContent>
 //               <div className="grid gap-6">
-//                 {/* <FormField
-//                   control={form.control}
-//                   name="month"
-//                   render={({ field }) => (
-//                     <FormItem>
-//                       <FormLabel>Month</FormLabel>
-//                       <Select
-//                         onValueChange={field.onChange}
-//                         defaultValue={field.value}
-//                       >
-//                         <FormControl>
-//                           <SelectTrigger>
-//                             <SelectValue placeholder="Select a month" />
-//                           </SelectTrigger>
-//                         </FormControl>
-//                         <SelectContent>
-//                           {[
-//                             "January",
-//                             "February",
-//                             "March",
-//                             "April",
-//                             "May",
-//                             "June",
-//                             "July",
-//                             "August",
-//                             "September",
-//                             "October",
-//                             "November",
-//                             "December",
-//                           ].map((m) => (
-//                             <SelectItem key={m} value={m}>
-//                               {m}
-//                             </SelectItem>
-//                           ))}
-//                         </SelectContent>
-//                       </Select>
-//                       <FormMessage />
-//                     </FormItem>
-//                   )}
-//                 />
-
-//                 <FormField
-//                   control={form.control}
-//                   name="year"
-//                   render={({ field }) => (
-//                     <FormItem>
-//                       <FormLabel>Year</FormLabel>
-//                       <FormControl>
-//                         <Input
-//                           type="number"
-//                           min="1900"
-//                           max={currentYear}
-//                           {...field}
-//                         />
-//                       </FormControl>
-//                       <FormMessage />
-//                     </FormItem>
-//                   )}
-//                 /> */}
 //                 <FormField
 //                   control={form.control}
 //                   name="date"
@@ -256,10 +190,39 @@
 //   );
 // };
 
-// export default CreatePdf;
+// export default EditingPage;
 
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
+import { createEditRequest } from "@/http/api"; // your edit request API
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { LoaderCircle } from "lucide-react";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -268,68 +231,54 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { createPdf } from "@/http/api";
-import { useMutation } from "@tanstack/react-query";
-import { LoaderCircle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-// Schema
 const formSchema = z.object({
   date: z.date({ required_error: "Date is required" }),
-  file: z
-    .instanceof(FileList)
-    .refine((file) => file.length === 1, "PDF file is required"),
+  newFile: z.instanceof(FileList).optional(),
 });
 
-const CreatePdf = () => {
+const EditingPage = () => {
   const navigate = useNavigate();
+  const { pdfId } = useParams();
+  const location = useLocation();
+  const state = location.state as { date: string; fileUrl: string };
+
+  const [existingFileUrl, setExistingFileUrl] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: new Date(),
+      date: state?.date ? new Date(state.date) : new Date(),
     },
   });
 
-  const fileRef = form.register("file");
+  useEffect(() => {
+    if (state?.fileUrl) {
+      setExistingFileUrl(state.fileUrl);
+    }
+  }, [state]);
+
+  const newFileRef = form.register("newFile");
+
   const mutation = useMutation({
-    mutationFn: createPdf,
+    mutationFn: (data: FormData) => createEditRequest(pdfId!, data),
     onSuccess: () => {
-      // queryClient.invalidateQueries({ queryKey: ["pdfs"] });
+      toast.success("Request created successfully!");
       navigate("/dashboard/pdfs");
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const formData = new FormData();
-    formData.append("date", values.date.toISOString());
-    formData.append("file", values.file[0]);
+    formData.append("newDate", values.date.toISOString());
+
+    if (values.newFile && values.newFile.length > 0) {
+      formData.append("newFile", values.newFile[0]);
+    }
+
     mutation.mutate(formData);
   };
 
@@ -349,14 +298,18 @@ const CreatePdf = () => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Create</BreadcrumbPage>
+                  <BreadcrumbPage>Edit</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+
             <div className="flex items-center gap-4">
-              <Link to={"/dashboard/pdfs"}>
-                <Button variant="outline">Cancel</Button>
-              </Link>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/dashboard/pdfs")}
+              >
+                Cancel
+              </Button>
               <Button type="submit" disabled={mutation.isPending}>
                 {mutation.isPending && (
                   <LoaderCircle className="animate-spin mr-2" />
@@ -368,9 +321,9 @@ const CreatePdf = () => {
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Create a new PDF</CardTitle>
+              <CardTitle>Edit PDF</CardTitle>
               <CardDescription>
-                Fill out the form below to upload a PDF.
+                You can change the date or upload a new PDF file.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -385,7 +338,7 @@ const CreatePdf = () => {
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
-                              variant={"outline"}
+                              variant="outline"
                               className={cn(
                                 "w-[280px] justify-start text-left font-normal",
                                 !field.value && "text-muted-foreground"
@@ -413,17 +366,30 @@ const CreatePdf = () => {
                   )}
                 />
 
+                {existingFileUrl && (
+                  <div>
+                    <FormLabel>Existing PDF</FormLabel>
+                    <iframe
+                      src={existingFileUrl}
+                      title="Existing PDF"
+                      width="100%"
+                      height="500px"
+                      className="border rounded"
+                    />
+                  </div>
+                )}
+
                 <FormField
                   control={form.control}
-                  name="file"
+                  name="newFile"
                   render={() => (
                     <FormItem>
-                      <FormLabel>PDF File</FormLabel>
+                      <FormLabel>Replace with New PDF (optional)</FormLabel>
                       <FormControl>
                         <Input
                           type="file"
                           accept="application/pdf"
-                          {...fileRef}
+                          {...newFileRef}
                         />
                       </FormControl>
                       <FormMessage />
@@ -439,4 +405,4 @@ const CreatePdf = () => {
   );
 };
 
-export default CreatePdf;
+export default EditingPage;

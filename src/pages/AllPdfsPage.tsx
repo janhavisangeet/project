@@ -302,11 +302,12 @@ const AllPdfsPage = () => {
     staleTime: 10000,
   });
 
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr?: string | Date) => {
+    if (!dateStr) return "Invalid Date";
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "Invalid Date";
     return date.toLocaleDateString();
   };
-
   const handleReset = () => {
     setSelectedDate(undefined);
     setPage(1);
@@ -373,9 +374,7 @@ const AllPdfsPage = () => {
               <TableBody>
                 {data?.data?.data.map((pdf: Pdf) => (
                   <TableRow key={pdf._id}>
-                    <TableCell>
-                      {formatDate(pdf.createdAt.toString())}
-                    </TableCell>
+                    <TableCell>{formatDate(pdf.date)}</TableCell>
                     <TableCell>
                       <a
                         href={pdf.file}

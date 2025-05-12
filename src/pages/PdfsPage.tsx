@@ -59,7 +59,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
-import useUserRole from "@/hooks/useUserRole";
+
 const PdfsPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [page, setPage] = useState(1);
@@ -72,7 +72,6 @@ const PdfsPage = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["pdfs", { selectedDate: selectedDate?.toISOString(), page }],
     queryFn: () => getPdfs({ date: selectedDate?.toISOString(), page, limit }),
-    staleTime: 10000,
   });
 
   const { mutate: requestDelete, isPending: isDeleting } = useMutation({
@@ -100,10 +99,15 @@ const PdfsPage = () => {
       }
     },
   });
-  //   console.log("data", openDialog);
 
-  const formatDate = (dateStr: string) => {
+  // const formatDate = (dateStr: string) => {
+  //   const date = new Date(dateStr);
+  //   return date.toLocaleDateString();
+  // };
+  const formatDate = (dateStr?: string | Date) => {
+    if (!dateStr) return "Invalid Date";
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "Invalid Date";
     return date.toLocaleDateString();
   };
 
@@ -111,8 +115,6 @@ const PdfsPage = () => {
     setSelectedDate(undefined);
     setPage(1);
   };
-  const role = useUserRole();
-  const isAdmin = role === "ADMIN";
   return (
     <>
       <div>
@@ -128,11 +130,7 @@ const PdfsPage = () => {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-          <Link
-            to={
-              isAdmin ? "/adminDashboard/pdfs/create" : "/dashboard/pdfs/create"
-            }
-          >
+          <Link to={"/dashboard/pdfs/create"}>
             <Button>
               <CirclePlus size={20} />
               <span className="ml-2">Add PDF</span>
@@ -192,7 +190,7 @@ const PdfsPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Uploaded At</TableHead>
+                    <TableHead>Date</TableHead>
                     <TableHead>File</TableHead>
                     <TableHead>
                       <span className="sr-only">Actions</span>
@@ -203,9 +201,7 @@ const PdfsPage = () => {
                 <TableBody>
                   {data?.data?.data.map((pdf: Pdf) => (
                     <TableRow key={pdf._id}>
-                      <TableCell>
-                        {formatDate(pdf.createdAt.toString())}
-                      </TableCell>
+                      <TableCell>{formatDate(pdf.date)}</TableCell>
                       <TableCell>
                         <a
                           href={pdf.file}
@@ -229,7 +225,19 @@ const PdfsPage = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link
+                                to={`/dashboard/pdfs/edit/${pdf._id}`}
+                                state={{
+                                  date: pdf.date,
+                                  fileUrl: pdf.file,
+                                }}
+                                className="w-full text-left"
+                              >
+                                Edit
+                              </Link>
+                            </DropdownMenuItem>
+
                             <DropdownMenuItem
                               onClick={() => {
                                 if (

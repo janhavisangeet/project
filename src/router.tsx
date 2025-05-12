@@ -52,7 +52,7 @@ const router = createBrowserRouter([
         element: <CreatePdf />,
       },
       {
-        path: "pdfs/edit",
+        path: "pdfs/edit/:pdfId",
         element: <EditingPage />,
       },
       {
